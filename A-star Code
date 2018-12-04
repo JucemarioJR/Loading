@@ -75,10 +75,10 @@ while (len(NoVerificar) > 0 ):
         break
   
     
-    # Aqui remove Atual de Openset   
+    # Aqui remove Atual do no  a ser verificado   
     NoVerificar.remove(Atual)
 
-   # Coloca Atual em CloseSet
+   # Coloca Atual em nó já verificado
     NoVerificado.append(Atual)  
     VisAtual =   Grafo[Atual]
    
