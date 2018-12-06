@@ -27,9 +27,9 @@ for row in range(3):
 
 grid[0][1] = 3
 grid[1][2] = 3
-grid[2][1] = 3
+grid[2][0] = 3
 
-Inicio = 0
+Partida = 0
 Destino = 8
 Grafo = []
 lts = []
@@ -59,15 +59,13 @@ NoVerificado = []
 MAPG = np.full((3*3),9999)
 MAPF = np.full((3*3),9999)
 
-Gvalor = 24
-
-MAPG[0] = Gvalor
-MAPF[0] = H[0] + Gvalor
+MAPG[0] = 0
+MAPF[0] = H[0]
 
 
-NoVerificar.append(Inicio)
+NoVerificar.append(Partida)
 
-teste = 'NAO'
+teste = 'X'
 
 while (len(NoVerificar) > 0 ):
     Verif = 0
@@ -102,10 +100,14 @@ else:
     print("Rota encontrada")
     Busca = Destino
     Caminho = [Destino]
-    while (Busca != Inicio):
+    while (Busca != Partida):
         VisAtual =   Grafo[Busca]
         for n in range(len(VisAtual)):
             if MAPG[VisAtual[n]] ==  min(MAPG[VisAtual]) :
                 Busca = VisAtual[n]
                 Caminho.insert(0, Busca)   
+    for n in range(len(Caminho)):
+        grid[Caminho[n]//3][Caminho[n]%3] = 5
+    
+    
     print(Caminho)
