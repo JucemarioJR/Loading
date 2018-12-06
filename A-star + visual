@@ -1,11 +1,13 @@
 import pygame
 import numpy as np
 
+#Calcula o valor de G para duas células vizinhas
 def CalcG(ldist,Atual, Visinho):
     
     G = ( (ldist[Atual][0]-ldist[Visinho][0])**2  +  (ldist[Atual][1]-ldist[Visinho][1])**2)**(1/2)     
     return G
 
+# essa função serve para desenhar na tela
 def Draw(pygame,screen, grid):
     def text_objects(text, font):
         textSurface = font.render(text,True,BLACK)
@@ -26,7 +28,7 @@ def Draw(pygame,screen, grid):
     # Coloca a margem entre cada células e as bordas
     MARGIN = 5 
     
-    # Draw the grid
+    # Desenha os grid na tela e coloca o valor de cada célula dentro para poder verificar a cor depois
     for row in range(15):
         for column in range(15):
             color = WHITE
@@ -38,7 +40,7 @@ def Draw(pygame,screen, grid):
                 color = BROWN
             elif grid[row][column] == 5:
                 color = BLUE
-            
+            #Desenha o grid e coloca dentro a cor 
             pygame.draw.rect(screen,
                              color,
                              [(MARGIN + WIDTH) * column + MARGIN,
@@ -46,31 +48,35 @@ def Draw(pygame,screen, grid):
                               WIDTH,
                               HEIGHT])
  
+    #Cria o quadrado Branco com Zerar na tela
     pygame.draw.rect(screen,WHITE,(365,5,90,67))
     smallText = pygame.font.Font("freesansbold.ttf",20)
     textSurf, textRect = text_objects("Zerar",smallText)
     textRect.center = ( (365+(90/2)), (5+(68/2)))
     screen.blit(textSurf,textRect)
     
-       
+    #Cria o quadrado Verde com Partida na tela   
     pygame.draw.rect(screen,GREEN,(365,77,90,67))
     smallText = pygame.font.Font("freesansbold.ttf",20)
     textSurf, textRect = text_objects("Partida",smallText)
     textRect.center = ( (365+(90/2)), (77+(68/2)))
     screen.blit(textSurf,textRect)
     
+    #Cria o quadrado Vermelho com Destino na tela
     pygame.draw.rect(screen,RED,(365,149,90,67))
     smallText = pygame.font.Font("freesansbold.ttf",20)
     textSurf, textRect = text_objects("Destino",smallText)
     textRect.center = ( (365+(90/2)), (149+(68/2)))
     screen.blit(textSurf,textRect)
     
+    #Cria o quadrado Marron com Obstaculo na tela
     pygame.draw.rect(screen,BROWN,(365,221,90,67))
     smallText = pygame.font.Font("freesansbold.ttf",20)
     textSurf, textRect = text_objects("Obst.",smallText)
     textRect.center = ( (365+(90/2)), (221+(68/2)))
     screen.blit(textSurf,textRect)
     
+    #Cria o quadrado Amarelo com Iniciar na tela
     pygame.draw.rect(screen,YELLOW,(365,293,90,67))
     smallText = pygame.font.Font("freesansbold.ttf",20)
     textSurf, textRect = text_objects("INICIAR",smallText)
