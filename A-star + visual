@@ -1,0 +1,322 @@
+import pygame
+import numpy as np
+
+def CalcG(ldist,Atual, Visinho):
+    
+    G = ( (ldist[Atual][0]-ldist[Visinho][0])**2  +  (ldist[Atual][1]-ldist[Visinho][1])**2)**(1/2)     
+    return G
+
+def Draw(pygame,screen, grid):
+    def text_objects(text, font):
+        textSurface = font.render(text,True,BLACK)
+        return textSurface, textSurface.get_rect()
+    
+    # Define as cores
+    WHITE = (255, 255, 255)
+    GREEN = (0, 255, 0)
+    RED = (255, 0, 0)
+    BROWN = (160,82,45)
+    YELLOW = (255,255,0)
+    BLUE = (0,0,255)
+    
+    # A largura e a altura das células foi colocado impár para ter um ponto do meio
+    WIDTH = 19
+    HEIGHT = 19
+    
+    # Coloca a margem entre cada células e as bordas
+    MARGIN = 5 
+    
+    # Draw the grid
+    for row in range(15):
+        for column in range(15):
+            color = WHITE
+            if grid[row][column] == 1:
+                color = GREEN
+            elif grid[row][column] == 2:
+                color = RED
+            elif grid[row][column] == 3:
+                color = BROWN
+            elif grid[row][column] == 5:
+                color = BLUE
+            
+            pygame.draw.rect(screen,
+                             color,
+                             [(MARGIN + WIDTH) * column + MARGIN,
+                              (MARGIN + HEIGHT) * row + MARGIN,
+                              WIDTH,
+                              HEIGHT])
+ 
+    pygame.draw.rect(screen,WHITE,(365,5,90,67))
+    smallText = pygame.font.Font("freesansbold.ttf",20)
+    textSurf, textRect = text_objects("Zerar",smallText)
+    textRect.center = ( (365+(90/2)), (5+(68/2)))
+    screen.blit(textSurf,textRect)
+    
+       
+    pygame.draw.rect(screen,GREEN,(365,77,90,67))
+    smallText = pygame.font.Font("freesansbold.ttf",20)
+    textSurf, textRect = text_objects("Partida",smallText)
+    textRect.center = ( (365+(90/2)), (77+(68/2)))
+    screen.blit(textSurf,textRect)
+    
+    pygame.draw.rect(screen,RED,(365,149,90,67))
+    smallText = pygame.font.Font("freesansbold.ttf",20)
+    textSurf, textRect = text_objects("Destino",smallText)
+    textRect.center = ( (365+(90/2)), (149+(68/2)))
+    screen.blit(textSurf,textRect)
+    
+    pygame.draw.rect(screen,BROWN,(365,221,90,67))
+    smallText = pygame.font.Font("freesansbold.ttf",20)
+    textSurf, textRect = text_objects("Obst.",smallText)
+    textRect.center = ( (365+(90/2)), (221+(68/2)))
+    screen.blit(textSurf,textRect)
+    
+    pygame.draw.rect(screen,YELLOW,(365,293,90,67))
+    smallText = pygame.font.Font("freesansbold.ttf",20)
+    textSurf, textRect = text_objects("INICIAR",smallText)
+    textRect.center = ( (365+(90/2)), (293+(68/2)))
+    screen.blit(textSurf,textRect)
+
+
+def text_objects(text, font):
+    textSurface = font.render(text,True,BLACK)
+    return textSurface, textSurface.get_rect()
+
+
+# Define some colors
+BLACK = (0, 0, 0)
+
+ # A largura e a altura das células foi colocado impár para ter um ponto do meio
+WIDTH = 19
+HEIGHT = 19
+    
+# Coloca a margem entre cada células e as bordas
+MARGIN = 5   
+
+grid = []   # Cria o array das células
+ldist= []   # Cria array para as posições X Y das célular
+Varredura =[]   # Cria array para dar "nomes" a células
+estado = 0
+
+# X e Y da primeira célula
+X = 14
+Y = 14
+
+#Gera os arrays do tamanho 15x15
+for row in range(15):
+    grid.append([])
+    Varredura.append([])
+    for column in range(15):
+        grid[row].append(0)
+        ldist.append([X,Y])
+        Varredura[row].append(estado)
+        estado=estado+1
+        X = X+24
+    X=14
+    Y=Y+24
+
+# Inicia pygame
+pygame.init()
+
+#Colocado valores de altura e largura da tela e abre a tela
+WINDOW_SIZE = [460, 365]
+screen = pygame.display.set_mode(WINDOW_SIZE)
+
+# Titulo da tela
+pygame.display.set_caption("Trabalho de rotas para Drone")
+
+# Variável para verificar quando continnuar com a janela aberta.
+done = False
+
+#Inicia o Clock de atualização da tela
+clock = pygame.time.Clock()
+
+# Inicia com a Partida em (0,0)
+Inicio = [0,0]
+grid[0][0] = 1
+
+#Inicia a Chegada em (0,0)
+Chegada = [14,14]
+grid[14][14] = 2
+
+# Inicia a variável de escolha do click do botão 
+Indicador = 0
+
+while not done:
+    for event in pygame.event.get():  # Verifica se o usuário faz algo na tela
+        if event.type == pygame.QUIT:  # Se apertar o botão fechar ele coloca done para True e encerra a janela
+            done = True  
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Pega a posição onde o mouse clicou na tela
+            pos = pygame.mouse.get_pos()
+            if pos[0] <= 361:
+                # pega os valores de X e Y e transforma em posição no grid
+                column = pos[0] // (WIDTH + MARGIN)
+                row = pos[1] // (HEIGHT + MARGIN)
+                # Coloca o valor no grid a depender do Indicador
+                if Indicador == 0: #Indicador 0 coloca o valor 0 dentro do grid e significar que está vazio a posição
+                    grid[row][column] = 0  
+                    if row == Inicio[0] and column == Inicio[1]:  # se zerar o Início ele vai para cordenada (0.0)
+                        Inicio = [0,0]
+                        grid[Inicio[0]][Inicio[1]] = 1
+                    elif row == Chegada[0] and column == Chegada[1]: # se zerar a Chegada ela vai para cordenada (14,14)
+                        Chegada = [14,14]
+                        grid[Chegada[0]][Chegada[1]] = 2
+                elif Indicador == 1:  #Indicador 1 coloca o valor 1 dentro do grid e significar que é o ponto de Início
+                    grid[Inicio[0]][Inicio[1]] = 0
+                    grid[row][column] = 1
+                    Inicio = [row,column]
+                elif Indicador == 2:   #Indicador 2 coloca o valor 2 dentro do grid e significar que é o ponto de Chegada
+                    grid[Chegada[0]][Chegada[1]] = 0
+                    grid[row][column] = 2
+                    Chegada = [row,column]
+                elif Indicador == 3:   #Indicador 3 coloca o valor 3 dentro do grid e significar que é um obstáculo
+                    grid[row][column] = 3
+                    if row == Inicio[0] and column == Inicio[1]:
+                        Inicio = [0,0]
+                        grid[Inicio[0]][Inicio[1]] = 1
+                    elif row == Chegada[0] and column == Chegada[1]:
+                        Chegada = [14,14]
+                        grid[Chegada[0]][Chegada[1]] = 2
+                                
+                print("Click ", pos, "Grid coordinates: ", row, column)
+            else:  # mostra a posição do clique o qual os Indicadores irão mudar de valor
+                if pos[1] <= 76:
+                    Indicador = 0
+                elif pos[1] <= 148:
+                    Indicador = 1
+                elif pos[1] <= 220:
+                    Indicador = 2
+                elif pos[1] <= 292:
+                     Indicador = 3
+                else:
+                    Indicador = 4  #Indicador 4 indica que vai iniciar o calculo da rota
+    
+    if Indicador == 4:
+        # transforma Inicio em Partida
+        Partida = Varredura[Inicio[0]][Inicio[1]]
+        #Chegada em Destino
+        Destino = Varredura[Chegada[0]][Chegada[1]]
+        # Cria um grafo com os vozinhos das células
+        Grafo = [] 
+        # Serve para salvar temporariamente os vizinhos
+        lts = []
+        # Cria o valor de heuristica de cada célula
+        H= []  
+        # serve para ir verificando os vizinhos de cada célula
+        for n in range(15):
+            for m in range(15):
+                if (m-1) >=0:
+                    if grid[n][m-1]!=3:
+                        lts.append( Varredura[n][m-1]) 
+                if (m+1) <=14:
+                    if grid[n][m+1]!=3:
+                        lts.append( Varredura[n][m+1]) 
+                if (n-1) >=0:
+                    if grid[n-1][m]!=3:
+                        lts.append( Varredura[n-1][m])
+                if (n+1) <=14:
+                    if grid[n+1][m]!=3:
+                        lts.append( Varredura[n+1][m])
+                #Vai calculando o valor heuristico 
+                H.append(  ( ( ldist[(n*3)+m][0]-ldist[Destino][0])**2  +  (ldist[(n*3)+m][1]-ldist[Destino][1])**2)**(1/2)  )        
+                #Vai salvando os viizinhos dentro do Grafo
+                Grafo.append(lts) 
+                lts=[]
+
+        #Essa array é responsável por verificar se tem células ainda para serem analisadas
+        NoVerificar = []
+        #Esse array é responsável por verificar se uma célula já foi analisada
+        NoVerificado = []
+
+        #Cria matrizes para adicionar os valores de G e de F cada célula
+        MAPG = np.full((15*15),9999)  # Foi adicionado valores bastantes elevados 
+        MAPF = np.full((15*15),9999)  # para o programa não ter o risco de procurar em células que não foram analisadas
+        
+        # Modifica os valores de G e de F da célula de partida
+        MAPG[Partida] = 0
+        MAPF[Partida] = H[Partida]
+
+        # Adiciona a célula de Partida ao array que precisa ser analisado
+        NoVerificar.append(Partida)
+        
+        # Serve para verificar se o programa encontrou uma rota ou não.
+        teste = 'X'
+        
+        
+        while (len(NoVerificar) > 0 ):
+            #desenha a tela
+            Draw(pygame,screen, grid)
+ 
+    
+            # Limit to 60 frames per second
+            clock.tick(60)
+         
+            # Atualiza a tela.
+            pygame.display.flip()
+            
+            Verif = 0
+            for n in range(len(NoVerificar)):
+                if n != Verif:
+                    if MAPF[n] < MAPF[Verif]:
+                        Verif = n
+            Atual = NoVerificar[Verif]                        
+            if (Atual == Destino):
+                teste = 'OK'
+                break
+          
+            
+            # Aqui remove Atual de Openset   
+            NoVerificar.remove(Atual)
+        
+           # Coloca Atual em CloseSet
+            NoVerificado.append(Atual)  
+            VisAtual =   Grafo[Atual]
+           
+            for n in range(len(VisAtual)):
+               if (VisAtual[n] not in NoVerificado):
+                   MAPG[VisAtual[n]] = MAPG[Atual] + CalcG(ldist,Atual,VisAtual[n])
+                   MAPF[VisAtual[n]] = MAPG[VisAtual[n]] + H[VisAtual[n]] 
+                   if (VisAtual[n] not in NoVerificar):
+                       NoVerificar.append(VisAtual[n])
+                       
+        if (teste != "OK"):
+            print("Rota Não encontrada")
+            Indicador = 0  
+        else:
+            print("Rota encontrada")
+            Indicador = 0
+            Busca = Destino
+            Caminho = [Destino]
+            while (Busca != Partida):
+                VisAtual =   Grafo[Busca]
+                OK = 0
+                for n in range(len(VisAtual)):
+                    if MAPG[VisAtual[n]] ==  min(MAPG[VisAtual]) :
+                        if OK == 0:
+                            OK = 1
+                            Busca = VisAtual[n]
+                            Caminho.insert(0, Busca)   
+            print(Caminho)
+            Caminho.remove(Destino)
+            Caminho.remove(Partida)
+            for n in range(len(Caminho)):
+                grid[Caminho[n]//15][Caminho[n]%15] = 5
+                   
+
+               
+    #Coloca a tela preta
+    screen.fill(BLACK)
+    #Imprime em cima da tela preta
+    Draw(pygame,screen, grid)
+ 
+    
+    # Limit to 60 frames per second
+    clock.tick(60)
+ 
+    # Go ahead and update the screen with what we've drawn.
+    pygame.display.flip()
+ 
+# Be IDLE friendly. If you forget this line, the program will 'hang'
+# on exit.
+pygame.quit()
