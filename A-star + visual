@@ -280,7 +280,7 @@ while not done:
             NoVerificado.append(Atual)  
             VisAtual =   Grafo[Atual]
            
-           #Atualiza as Matrizes MAPG e MAPF com os valores do Nó Atual
+           #Atualiza as Matrizes MAPG e MAPF com os valores do Nó Atual e seus vizinhos
             for n in range(len(VisAtual)):
                if (VisAtual[n] not in NoVerificado):
                    MAPG[VisAtual[n]] = MAPG[Atual] + CalcG(ldist,Atual,VisAtual[n])
