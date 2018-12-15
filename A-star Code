@@ -1,23 +1,29 @@
 import numpy as np
 
 
+#Essa é um codigo apenas para uma Matriz 3x3, caso queira aumentar basta mudar os valores 3 para o desejado.
+
 def CalcG(ldist,Atual, Visinho):
     
     G = ( (ldist[Atual][0]-ldist[Visinho][0])**2  +  (ldist[Atual][1]-ldist[Visinho][1])**2)**(1/2)     
     return G
 
 
-grid = []
-ldist= []
-Varredura =[]
+grid = []   # Cria o array das células
+ldist= []   # Cria array para as posições X Y das célular
+Varredura =[]   # Cria array para dar "nomes" a células
 estado = 0
+
+# X e Y da primeira célula
 X = 14
 Y = 14
+
+#Gera os arrays do tamanho 3x3
 for row in range(3):
     grid.append([])
     Varredura.append([])
     for column in range(3):
-        grid[row].append(0)  # Append a cell
+        grid[row].append(0)  # Vai adicionando células
         ldist.append([X,Y])
         Varredura[row].append(estado)
         estado=estado+1
@@ -25,15 +31,22 @@ for row in range(3):
     X=14
     Y=Y+24
 
+#Coloquei valores 3 dentro de algumas células para simular obstáculos
 grid[0][1] = 3
 grid[1][2] = 3
 grid[2][0] = 3
 
+#Localizaço da Partida e do destino
 Partida = 0
 Destino = 8
+
+# Cria um grafo com os vizinhos das células
 Grafo = []
+# Serve para salvar temporariamente os vizinhos
 lts = []
+# Cria o valor de heuristica (distância direta de cada célula até a célula final)
 H= []
+ # serve para ir verificando os vizinhos de cada célula
 for n in range(3):
     for m in range(3):
         if (m-1) >=0:
@@ -52,51 +65,58 @@ for n in range(3):
         Grafo.append(lts)
         lts=[]
 
+ #Essa array é responsável por verificar se tem células ainda para serem analisadas
 NoVerificar = []
+ #Esse array é responsável por verificar se uma célula já foi analisada
 NoVerificado = []
 
-
+#Cria matrizes para adicionar os valores de G e de F cada célula
 MAPG = np.full((3*3),9999)
 MAPF = np.full((3*3),9999)
 
+# Modifica os valores de G e de F da célula de partida
 MAPG[0] = 0
 MAPF[0] = H[0]
 
-
+# Adiciona a célula de Partida ao array que precisa ser analisado
 NoVerificar.append(Partida)
 
+# Serve para verificar se o programa encontrou uma rota ou não.
 teste = 'X'
 
+#Ele vai continuar no loop abaixo caso ainda existe nós a ser verificado
 while (len(NoVerificar) > 0 ):
     Verif = 0
+    #Irá verificar o nó dentro do NoVerificar
     for n in range(len(NoVerificar)):
         if n != Verif:
-            if MAPF[n] < MAPF[Verif]:
+            if MAPF[n] < MAPF[Verif]: #pega o nó com o menor valor de F
                 Verif = n
     Atual = NoVerificar[Verif]                        
-    if (Atual == Destino):
+    if (Atual == Destino): Se o Nó a ser verificado (Atual) for o mesmo de Destino ele encerra o loop
         teste = 'OK'
         break
   
     
-    # Aqui remove Atual de Openset   
+    # Aqui remove Atual de NoVerificar  
     NoVerificar.remove(Atual)
 
-   # Coloca Atual em CloseSet
+   # Coloca Atual em NoVerificado
     NoVerificado.append(Atual)  
     VisAtual =   Grafo[Atual]
-   
+   #Atualiza as Matrizes MAPG e MAPF com os valores do Nó Atual e seus vizinhos
     for n in range(len(VisAtual)):
        if (VisAtual[n] not in NoVerificado):
            MAPG[VisAtual[n]] = MAPG[Atual] + CalcG(ldist,Atual,VisAtual[n])
            MAPF[VisAtual[n]] = MAPG[VisAtual[n]] + H[VisAtual[n]] 
            if (VisAtual[n] not in NoVerificar):
                NoVerificar.append(VisAtual[n])
-               
+
+#Essa função serve para verificar se é possível encontrar uma rota ou não                              
 if (teste != "OK"):
     print("Rota Não encontrada")
       
-else:
+else: #Se encontrou a rota ele verifica iniciando do Destino e vai pegando os nós com menores valores de F até chegar no Início
     print("Rota encontrada")
     Busca = Destino
     Caminho = [Destino]
@@ -109,5 +129,5 @@ else:
     for n in range(len(Caminho)):
         grid[Caminho[n]//3][Caminho[n]%3] = 5
     
-    
+    #Imprime a rota
     print(Caminho)
