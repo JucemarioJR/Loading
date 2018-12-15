@@ -89,7 +89,7 @@ def text_objects(text, font):
     return textSurface, textSurface.get_rect()
 
 
-# Define some colors
+# Define a cor preta
 BLACK = (0, 0, 0)
 
  # A largura e a altura das células foi colocado impár para ter um ponto do meio
@@ -177,7 +177,7 @@ while not done:
                     grid[row][column] = 2
                     Chegada = [row,column]
                 elif Indicador == 3:   #Indicador 3 coloca o valor 3 dentro do grid e significar que é um obstáculo
-                    grid[row][column] = 3
+                    grid[row][column] = 3 #Abaixo é para resetar o local do Inicio e da Chegada para os pontos (0,0) e (14,14).
                     if row == Inicio[0] and column == Inicio[1]:
                         Inicio = [0,0]
                         grid[Inicio[0]][Inicio[1]] = 1
@@ -198,7 +198,7 @@ while not done:
                 else:
                     Indicador = 4  #Indicador 4 indica que vai iniciar o calculo da rota
     
-    if Indicador == 4:
+    if Indicador == 4:  #entra nesse if apenas se o botão Iniciar foi pressionado
         # transforma Inicio em Partida
         Partida = Varredura[Inicio[0]][Inicio[1]]
         #Chegada em Destino
@@ -249,47 +249,51 @@ while not done:
         # Serve para verificar se o programa encontrou uma rota ou não.
         teste = 'X'
         
-        
+        #Ele vai continuar no loop abaixo caso ainda existe nós a ser verificado
         while (len(NoVerificar) > 0 ):
             #desenha a tela
             Draw(pygame,screen, grid)
  
     
-            # Limit to 60 frames per second
+            # Limita a 60fps a atualizaço da tela
             clock.tick(60)
          
             # Atualiza a tela.
             pygame.display.flip()
             
+            #Irá verificar o nó dentro do NoVerificar
             Verif = 0
             for n in range(len(NoVerificar)):
                 if n != Verif:
-                    if MAPF[n] < MAPF[Verif]:
-                        Verif = n
+                    if MAPF[n] < MAPF[Verif]:  #pega o nó com o menor valor de F
+                        Verif = n       #esse Verif serve para guardar dentro dele o nó que vai continuar sendo verificado 
             Atual = NoVerificar[Verif]                        
-            if (Atual == Destino):
+            if (Atual == Destino):      #Se o Nó a ser verificado (Atual) for o mesmo de Destino ele encerra o loop
                 teste = 'OK'
                 break
           
             
-            # Aqui remove Atual de Openset   
+            # Aqui remove o nó Atual do NoVerificar (Os nós que serão verificados ainda)    
             NoVerificar.remove(Atual)
         
-           # Coloca Atual em CloseSet
+           # Coloca Atual em NoVerificado( Nós já verificados
             NoVerificado.append(Atual)  
             VisAtual =   Grafo[Atual]
            
+           #Atualiza as Matrizes MAPG e MAPF com os valores do Nó Atual
             for n in range(len(VisAtual)):
                if (VisAtual[n] not in NoVerificado):
                    MAPG[VisAtual[n]] = MAPG[Atual] + CalcG(ldist,Atual,VisAtual[n])
                    MAPF[VisAtual[n]] = MAPG[VisAtual[n]] + H[VisAtual[n]] 
                    if (VisAtual[n] not in NoVerificar):
                        NoVerificar.append(VisAtual[n])
-                       
+        
+        
+        #Essa função serve para verificar se é possível encontrar uma rota ou não               
         if (teste != "OK"):
             print("Rota Não encontrada")
             Indicador = 0  
-        else:
+        else:                       #Se encontrou a rota ele verifica iniciando do Destino e vai pegando os nós com menores valores de F até chegar no Início
             print("Rota encontrada")
             Indicador = 0
             Busca = Destino
@@ -317,12 +321,11 @@ while not done:
     Draw(pygame,screen, grid)
  
     
-    # Limit to 60 frames per second
+    # Limita  a 60 frames por segundo
     clock.tick(60)
  
-    # Go ahead and update the screen with what we've drawn.
+    # Atualiza a tela
     pygame.display.flip()
  
-# Be IDLE friendly. If you forget this line, the program will 'hang'
-# on exit.
+# Fecha a janela de 
 pygame.quit()
