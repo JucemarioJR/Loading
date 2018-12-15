@@ -203,7 +203,7 @@ while not done:
         Partida = Varredura[Inicio[0]][Inicio[1]]
         #Chegada em Destino
         Destino = Varredura[Chegada[0]][Chegada[1]]
-        # Cria um grafo com os vozinhos das células
+        # Cria um grafo com os vizinhos das células
         Grafo = [] 
         # Serve para salvar temporariamente os vizinhos
         lts = []
