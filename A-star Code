@@ -93,7 +93,7 @@ while (len(NoVerificar) > 0 ):
             if MAPF[n] < MAPF[Verif]: #pega o nó com o menor valor de F
                 Verif = n
     Atual = NoVerificar[Verif]                        
-    if (Atual == Destino): Se o Nó a ser verificado (Atual) for o mesmo de Destino ele encerra o loop
+    if (Atual == Destino): # Se o Nó a ser verificado (Atual) for o mesmo de Destino ele encerra o loop
         teste = 'OK'
         break
   
