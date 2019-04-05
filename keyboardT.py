@@ -68,6 +68,9 @@ def XYT3(msg):
         [rot_q.x, rot_q.y, rot_q.z, rot_q.w])
 
 
+
+
+
 def vels(speed, turn):
     return "currently:\tspeed %s\tturn %s " % (speed, turn)
 
@@ -195,15 +198,15 @@ publ3 = rospy.Publisher('/ardrone_3/land', Empty, queue_size=1)
 vazio = Empty()
 
 # Create a node with this name in the ros server
-rospy.init_node('pyteste2')
+rospy.init_node('joao')
 
 speed = rospy.get_param("~speed", 0.5)
 turn = rospy.get_param("~turn", 1.0)
 
-xa = 0
-ya = 0
-za = 0
-tha = 0
+xa, xb, xc = 0 ,0 ,0
+ya, yb, yc = 0 ,0 ,0
+za, zb, zc = 0 ,0 ,0
+tha, thb, thc = 0 ,0 ,0
 status = 0
 
 Partida1 = (6, -8)
@@ -212,8 +215,8 @@ Destino1 = (6, 8)
 Partida2 = (2, -8)
 Destino2 = (2, 8)
 
-Partida3 = (-6, -8)
-Destino3 = (-6, 8)
+Partida3 = (-2, -8)
+Destino3 = (-2, 8)
 
 r = rospy.Rate(4)
 
@@ -223,6 +226,8 @@ pygame.display.set_mode((800, 300))
 
 looping = True
 
+ConDrone = 0
+
 while looping:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -230,33 +235,81 @@ while looping:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_v:
-                pubo1.publish(vazio)
-                print(status_1)
+                if ConDrone == 1:
+                    pubo1.publish(vazio)
+                    print(status_1)
+                elif ConDrone == 2:
+                    pubo2.publish(vazio)
+                elif ConDrone == 3:
+                    pubo3.publish(vazio)    
             if event.key == pygame.K_b:
-                publ1.publish(vazio)
-                print(status_1)
+                if ConDrone == 1:
+                    publ1.publish(vazio)
+                    print(status_1)
+                elif ConDrone == 2:
+                    publ2.publish(vazio)
+                elif ConDrone == 3:
+                    publ3.publish(vazio)
             if event.key == pygame.K_1:
                 print("Botao 1")
+                ConDrone = 1
             if event.key == pygame.K_2:
                 print("Botao 2")
+                ConDrone = 2
             if event.key == pygame.K_3:
                 print("Botao 3")
+                ConDrone = 3
             if event.key == pygame.K_4:
                 print("Botao 4")
+                ConDrone = 4
+    if ConDrone == 4:
+        pubo1.publish(vazio)
+        pubo2.publish(vazio)
+        pubo3.publish(vazio)
+    if ConDrone == 0:
+        publ1.publish(vazio)
+        publ2.publish(vazio)
+        publ3.publish(vazio)
+
     xa, ya, tha = Auto_Control(x1, y1, theta1, Partida1, Destino1)
     xb, yb, thb = Auto_Control(x2, y2, theta2, Partida2, Destino2)
     xc, yc, thc = Auto_Control(x3, y3, theta3, Partida3, Destino3)
 
     keys = pygame.key.get_pressed()
-    x, y, z, th = Key_Control(keys, xa, ya, za, tha)
 
-    twist = Twist()
-    twist.linear.x = x*speed
-    twist.linear.y = y*speed
-    twist.linear.z = z*speed
-    twist.angular.x = 0
-    twist.angular.y = 0
-    twist.angular.z = th*turn
-    pub1.publish(twist)
+    if ConDrone == 1:
+        xa, ya, za, tha = Key_Control(keys, xa, ya, za, tha)
+    elif ConDrone == 2:
+        xb, yb, zb, thb = Key_Control(keys, xb, yb, zb, thb)
+    elif ConDrone == 3:
+        xc, yc, zc, thc = Key_Control(keys, xc, yc, zc, thc)
+
+    twist1 = Twist()
+    twist2 = Twist()
+    twist3 = Twist()
+    twist1.linear.x = xa*speed
+    twist1.linear.y = ya*speed
+    twist1.linear.z = za*speed
+    twist1.angular.x = 0
+    twist1.angular.y = 0
+    twist1.angular.z = tha*turn
+    pub1.publish(twist1)
+
+    twist2.linear.x = xb*speed
+    twist2.linear.y = yb*speed
+    twist2.linear.z = zb*speed
+    twist2.angular.x = 0
+    twist2.angular.y = 0
+    twist2.angular.z = thb*turn
+    pub2.publish(twist2)
+
+    twist3.linear.x = xc*speed
+    twist3.linear.y = yc*speed
+    twist3.linear.z = zc*speed
+    twist3.angular.x = 0
+    twist3.angular.y = 0
+    twist3.angular.z = thc*turn
+    pub3.publish(twist3)
+
     r.sleep()
 pygame.quit()
