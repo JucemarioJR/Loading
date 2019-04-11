@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import pygame
+from std_srvs.srv import Empty
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Empty
 from sensor_msgs.msg import Range
@@ -86,22 +87,31 @@ def ALT3(msg):
     global H3
     H3 = msg.range
 
-def DistDrone(xd1,yd1,xd2,yd2):
-    Distancia = ((xd1-xd2)**2 + (yd1-yd2)**2)**(float(1)/2)
-    return Distancia
+def DistDrone(x1,x2,x3,y1,y2,y3):
+    D12 = ((x1-x2)**2 + (y1-y2)**2)**(float(1)/2)
+    
+    D13 = ((x1-x3)**2 + (y1-y3)**2)**(float(1)/2)
+    
+    D23 = ((x3-x2)**2 + (y3-y2)**2)**(float(1)/2)
+    
+    return (D12, D13, D23)
 
 
-def Auto_Control(x1, y1, theta1, Partida1, Destino1):
+def Auto_Control(x, y, theta1, Partida1, Destino1):
     xa = 0
     ya = 0
     za = 0
     tha = 0
+    d = 0
     xi, yi = Partida1
     xf, yf = Destino1
 
-    inc_x = xf - x1
-    inc_y = yf - y1
+    inc_x = xf - x
+    inc_y = yf - y
     angle_to_goal = atan2(inc_y, inc_x)
+
+    d = abs((yf - yi)*x + (xi - xf)*y + (xf*yi - xi*yf)) / \
+            ((yi-yf)**2 + (xf-xi)**2)**(float(1)/2)
 
     if angle_to_goal - theta1 > 0.1:
         tha = 0.5
@@ -110,48 +120,45 @@ def Auto_Control(x1, y1, theta1, Partida1, Destino1):
     else:
         tha = 0
         # relacao do ponto a reta
-        position = (xf - xi) * (y1 - yi) - (yf - yi) * \
-            (x1 - xi)  # esquerda + e direita -
-        d = abs((yf - yi)*x1 + (xi - xf)*y1 + (xf*yi - xi*yf)) / \
-            ((yi-yf)**2 + (xf-xi)**2)**(float(1)/2)
-
+        position = (xf - xi) * (y - yi) - (yf - yi) * \
+            (x - xi)  # esquerda + e direita -
+        
         if (d > 0.1 and position > 0):
             ya = -1
         elif d > 0.1 and position < 0:
             ya = 1
         else:
             ya = 0
-            if yf - y1 > 0.05:
+            if yf - y > 0.05:
                 xa = 1
             else:
                 xa = 0
 
-    return (xa, ya, tha)
+    return (xa, ya, tha, d)
 
 
-def Key_Control(keys, xa, ya, za, tha):
-    if keys[pygame.K_w]:
+
+def Key_Control(keys, xa, ya, za, tha, D12, D13, D23):
+    if (keys[pygame.K_w] and D12 > 2 and D13 > 2 and D23 > 2):
         x = 1
-        print("w")
-    elif keys[pygame.K_s]:
+        
+    elif (keys[pygame.K_s] and D12 > 2 and D13 > 2 and D23 > 2):
         x = -1
-        print("s")
     else:
         x = xa
 
-    if keys[pygame.K_a]:
+    if (keys[pygame.K_a] and D12 > 2 and D13 > 2 and D23 > 2):
         y = 1
-        print("a")
-    elif keys[pygame.K_d]:
+    elif (keys[pygame.K_d] and D12 > 2 and D13 > 2 and D23 > 2):
         y = -1
         print("d")
     else:
         y = ya
 
-    if keys[pygame.K_LEFT]:
+    if (keys[pygame.K_LEFT] and D12 > 2 and D13 > 2 and D23 > 2):
         th = 1
         print("LEFT")
-    elif keys[pygame.K_RIGHT]:
+    elif (keys[pygame.K_RIGHT] and D12 > 2 and D13 > 2 and D23 > 2):
         th = -1
         print("RIGHT")
     else:
@@ -208,7 +215,11 @@ xa, xb, xc = 0 ,0 ,0
 ya, yb, yc = 0 ,0 ,0
 za, zb, zc = 0 ,0 ,0
 tha, thb, thc = 0 ,0 ,0
+d1, d2, d3 = 0, 0, 0
+D12, D13, D23 = 0, 0, 0
+
 status = 0
+
 
 Partida1 = (6, -8)
 Destino1 = (6, 8)
@@ -230,6 +241,8 @@ looping = True
 ConDrone = 0
 
 while looping:
+    D12, D13, D23 = DistDrone(x1,x2,x3,y1,y2,y3)
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             looping = False
@@ -263,7 +276,7 @@ while looping:
             if event.key == pygame.K_4:
                 print("Botao 4")
                 ConDrone = 4
-    if ConDrone == 4: #MODIFICAR 
+    if ConDrone == 4: 
         ConDrone = 1
         pubo1.publish(vazio)
         pubo2.publish(vazio)
@@ -273,34 +286,36 @@ while looping:
         publ2.publish(vazio)
         publ3.publish(vazio)
 
-    xa, ya, tha = Auto_Control(x1, y1, theta1, Partida1, Destino1)
-    xb, yb, thb = Auto_Control(x2, y2, theta2, Partida2, Destino2)
-    xc, yc, thc = Auto_Control(x3, y3, theta3, Partida3, Destino3)
+    xa, ya, tha, d1 = Auto_Control(x1, y1, theta1, Partida1, Destino1)
+    xb, yb, thb, d2 = Auto_Control(x2, y2, theta2, Partida2, Destino2)
+    xc, yc, thc, d3 = Auto_Control(x3, y3, theta3, Partida3, Destino3)
 
     keys = pygame.key.get_pressed()
 
     if ConDrone == 1:
-        xa, ya, za, tha = Key_Control(keys, xa, ya, za, tha)
+        xa, ya, za, tha = Key_Control(keys, xa, ya, za, tha, D12, D13, D23)
     elif ConDrone == 2:
-        xb, yb, zb, thb = Key_Control(keys, xb, yb, zb, thb)
+        xb, yb, zb, thb = Key_Control(keys, xb, yb, zb, thb, D12, D13, D23)
     elif ConDrone == 3:
-        xc, yc, zc, thc = Key_Control(keys, xc, yc, zc, thc)
+        xc, yc, zc, thc = Key_Control(keys, xc, yc, zc, thc, D12, D13, D23)
 
-    if abs(  (Destino1[1] - y1) - (Destino2[1] - y2) )  > 0.5:
+
+
+    if abs(  (Destino1[1] - y1) - (Destino2[1] - y2) )  > 1:
         if (Destino1[1] - y1) < (Destino2[1] - y2):
             na = 1
             xa, ya, za = 0, 0, 0
         if (Destino1[1] - y1) > (Destino2[1] - y2):
             nb = 1
             xb, yb, zb = 0, 0, 0
-    if abs(  (Destino1[1] - y1) - (Destino3[1] - y3) )  > 0.5: 
+    if abs(  (Destino1[1] - y1) - (Destino3[1] - y3) )  > 1: 
         if (Destino1[1] - y1) < (Destino3[1] - y3):
             na = 1
             xa, ya, za = 0, 0, 0
         if (Destino1[1] - y1) > (Destino3[1] - y3):
             nc = 1
             xc, yc, zc = 0, 0, 0    
-    if abs(  (Destino3[1] - y3) - (Destino2[1] - y2) )  > 0.5:
+    if abs(  (Destino3[1] - y3) - (Destino2[1] - y2) )  > 1:
         if (Destino3[1] - y3) < (Destino2[1] - y2):
             nc = 1
             xc, yc, zc = 0, 0, 0
@@ -308,15 +323,34 @@ while looping:
             nb = 1
             xb, yb, zb = 0, 0, 0
 
-    if( abs((Destino1[1] - y1) ) < 0.2 ):
+    if ( abs((Destino1[1] - y1) ) < 0.2 ):
         publ1.publish(vazio)
         xa, ya, za = 0, 0, 0
-    if( abs((Destino2[1] - y2))  < 0.2 ):
+    if ( abs((Destino2[1] - y2))  < 0.2 ):
         publ2.publish(vazio)
         xb, yb, zb = 0, 0, 0
-    if( abs((Destino3[1] - y3))  < 0.2 ):
+    if ( abs((Destino3[1] - y3))  < 0.2 ):
         publ3.publish(vazio)
         xc, yc, zc = 0, 0, 0
+
+    if (D12 < 1.5):
+        if (d1 > d2):
+            publ2.publish(vazio)
+        else:
+            publ1.publish(vazio)
+
+    if (D13 < 1.5):
+        if (d1 > d3):
+            publ3.publish(vazio)
+        else:
+            publ1.publish(vazio)
+
+    if (D23 < 1.5):
+        if (d2 > d3):
+            publ3.publish(vazio)
+        else:
+            publ2.publish(vazio)
+
 
     twist1 = Twist()
     twist2 = Twist()
