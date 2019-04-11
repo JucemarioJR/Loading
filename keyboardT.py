@@ -68,9 +68,6 @@ def XYT3(msg):
         [rot_q.x, rot_q.y, rot_q.z, rot_q.w])
 
 
-
-
-
 def vels(speed, turn):
     return "currently:\tspeed %s\tturn %s " % (speed, turn)
 
@@ -88,6 +85,10 @@ def ALT2(msg):
 def ALT3(msg):
     global H3
     H3 = msg.range
+
+def DistDrone(xd1,yd1,xd2,yd2):
+    Distancia = ((xd1-xd2)**2 + (yd1-yd2)**2)**(float(1)/2)
+    return Distancia
 
 
 def Auto_Control(x1, y1, theta1, Partida1, Destino1):
@@ -198,7 +199,7 @@ publ3 = rospy.Publisher('/ardrone_3/land', Empty, queue_size=1)
 vazio = Empty()
 
 # Create a node with this name in the ros server
-rospy.init_node('joao')
+rospy.init_node('LaSid')
 
 speed = rospy.get_param("~speed", 0.5)
 turn = rospy.get_param("~turn", 1.0)
@@ -262,7 +263,8 @@ while looping:
             if event.key == pygame.K_4:
                 print("Botao 4")
                 ConDrone = 4
-    if ConDrone == 4:
+    if ConDrone == 4: #MODIFICAR 
+        ConDrone = 1
         pubo1.publish(vazio)
         pubo2.publish(vazio)
         pubo3.publish(vazio)
@@ -283,6 +285,38 @@ while looping:
         xb, yb, zb, thb = Key_Control(keys, xb, yb, zb, thb)
     elif ConDrone == 3:
         xc, yc, zc, thc = Key_Control(keys, xc, yc, zc, thc)
+
+    if abs(  (Destino1[1] - y1) - (Destino2[1] - y2) )  > 0.5:
+        if (Destino1[1] - y1) < (Destino2[1] - y2):
+            na = 1
+            xa, ya, za = 0, 0, 0
+        if (Destino1[1] - y1) > (Destino2[1] - y2):
+            nb = 1
+            xb, yb, zb = 0, 0, 0
+    if abs(  (Destino1[1] - y1) - (Destino3[1] - y3) )  > 0.5: 
+        if (Destino1[1] - y1) < (Destino3[1] - y3):
+            na = 1
+            xa, ya, za = 0, 0, 0
+        if (Destino1[1] - y1) > (Destino3[1] - y3):
+            nc = 1
+            xc, yc, zc = 0, 0, 0    
+    if abs(  (Destino3[1] - y3) - (Destino2[1] - y2) )  > 0.5:
+        if (Destino3[1] - y3) < (Destino2[1] - y2):
+            nc = 1
+            xc, yc, zc = 0, 0, 0
+        if (Destino3[1] - y3) > (Destino2[1] - y2):
+            nb = 1
+            xb, yb, zb = 0, 0, 0
+
+    if( abs((Destino1[1] - y1) ) < 0.2 ):
+        publ1.publish(vazio)
+        xa, ya, za = 0, 0, 0
+    if( abs((Destino2[1] - y2))  < 0.2 ):
+        publ2.publish(vazio)
+        xb, yb, zb = 0, 0, 0
+    if( abs((Destino3[1] - y3))  < 0.2 ):
+        publ3.publish(vazio)
+        xc, yc, zc = 0, 0, 0
 
     twist1 = Twist()
     twist2 = Twist()
