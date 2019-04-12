@@ -87,6 +87,7 @@ def ALT3(msg):
     global H3
     H3 = msg.range
 
+
 def DistDrone(x1,x2,x3,y1,y2,y3):
     D12 = ((x1-x2)**2 + (y1-y2)**2)**(float(1)/2)
     
@@ -276,6 +277,7 @@ while looping:
             if event.key == pygame.K_4:
                 print("Botao 4")
                 ConDrone = 4
+    
     if ConDrone == 4: 
         ConDrone = 1
         pubo1.publish(vazio)
@@ -302,26 +304,20 @@ while looping:
 
 
     if abs(  (Destino1[1] - y1) - (Destino2[1] - y2) )  > 1:
-        if (Destino1[1] - y1) < (Destino2[1] - y2):
-            na = 1
-            xa, ya, za = 0, 0, 0
-        if (Destino1[1] - y1) > (Destino2[1] - y2):
-            nb = 1
-            xb, yb, zb = 0, 0, 0
+        if (Destino1[1] - y1) < (Destino2[1] - y2)  and (xa != -1):
+            xa = 0
+        if (Destino1[1] - y1) > (Destino2[1] - y2)  and (xb != -1):
+            xb = 0
     if abs(  (Destino1[1] - y1) - (Destino3[1] - y3) )  > 1: 
-        if (Destino1[1] - y1) < (Destino3[1] - y3):
-            na = 1
-            xa, ya, za = 0, 0, 0
-        if (Destino1[1] - y1) > (Destino3[1] - y3):
-            nc = 1
-            xc, yc, zc = 0, 0, 0    
+        if (Destino1[1] - y1) < (Destino3[1] - y3)  and (xa != -1):
+            xa = 0
+        if (Destino1[1] - y1) > (Destino3[1] - y3)  and (xc != -1):
+            xc = 0    
     if abs(  (Destino3[1] - y3) - (Destino2[1] - y2) )  > 1:
-        if (Destino3[1] - y3) < (Destino2[1] - y2):
-            nc = 1
-            xc, yc, zc = 0, 0, 0
-        if (Destino3[1] - y3) > (Destino2[1] - y2):
-            nb = 1
-            xb, yb, zb = 0, 0, 0
+        if (Destino3[1] - y3) < (Destino2[1] - y2)  and (xc != -1):
+            xc = 0
+        if (Destino3[1] - y3) > (Destino2[1] - y2)  and (xb != -1):
+            xb = 0
 
     if ( abs((Destino1[1] - y1) ) < 0.2 ):
         publ1.publish(vazio)
